@@ -38,7 +38,7 @@ const char *long_options_help[] = {
     "Disable line buffering",
     "Update conda installation prior to STASIS environment creation",
     "On error, immediately terminate all tasks",
-    "Terminate task after timeout is reached (#s, #m, #h)",
+    "Terminate task after timeout period (fmt: n[hms], default: 0s)",
     "Overwrite an existing release",
     "Do not build docker images",
     "Do not upload artifacts to Artifactory",

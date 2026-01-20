@@ -160,7 +160,7 @@ stasis mydelivery.ini
 | --unbuffered                |      -U      | Disable line buffering                                         |
 | --update-base               |     n/a      | Update conda installation prior to STATIS environment creation |
 | --fail-fast                 |     n/a      | On test error, terminate all tasks                             |
-| --task-timeout ARG          |     n/a      | Terminate task after timeout is reached (#s, #m, #h)           |
+| --task-timeout ARG          |     n/a      | Terminate task after timeout period (fmt: n[hms], default: 0s) |
 | --overwrite                 |     n/a      | Overwrite an existing release                                  |
 | --no-docker                 |     n/a      | Do not build docker images                                     |
 | --no-artifactory            |     n/a      | Do not upload artifacts to Artifactory                         |
