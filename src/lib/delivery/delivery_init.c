@@ -14,7 +14,7 @@ int delivery_init_tmpdir(struct Delivery *ctx) {
     int unusable = 1;
     errno = 0;
 
-    int need_setenv = 0;
+    //int need_setenv = 0;
     const char *x = getenv("TMPDIR");
     if (x) {
         guard_free(ctx->storage.tmpdir);
@@ -30,7 +30,7 @@ int delivery_init_tmpdir(struct Delivery *ctx) {
             SYSERROR("%s", "unable to allocate tmpdir");
             goto l_delivery_init_tmpdir_fatal;
         }
-        need_setenv = 1;
+        //need_setenv = 1;
     }
 
     if (!ctx->storage.tmpdir) {
@@ -95,9 +95,10 @@ int delivery_init_tmpdir(struct Delivery *ctx) {
         }
     }
     unusable = 0;
-    if (need_setenv) {
-        setenv("TMPDIR", ctx->storage.tmpdir, 1);
-    }
+    // TODO: Figure out why this breaks EVERYTHING
+    //if (need_setenv) {
+    //    setenv("TMPDIR", ctx->storage.tmpdir, 1);
+    //}
 
     l_delivery_init_tmpdir_fatal:
     guard_free(tmpdir);
