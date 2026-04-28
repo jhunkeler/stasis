@@ -454,6 +454,9 @@ int ini_write(struct INIFILE *ini, FILE **stream, unsigned mode) {
                     xvalue = ini_getval_str(ini, section_name, key, (int) mode, &err);
                     value = xvalue;
                 }
+
+                const size_t buf_size = sizeof(outvalue);
+                size_t buf_len = 0;
                 char **parts = split(value, LINE_SEP, 0);
                 for (size_t p = 0; parts && parts[p] != NULL; p++) {
                     char *render = NULL;
@@ -470,38 +473,30 @@ int ini_write(struct INIFILE *ini, FILE **stream, unsigned mode) {
                         return -1;
                     }
 
-                    size_t len = 0;
+                    buf_len = strlen(outvalue);
                     if (*hint == INIVAL_TYPE_STR_ARRAY) {
-                        SYSDEBUG("%s", "array hint.");
-                        int leading_space = isspace(*render);
+                        const int leading_space = isspace(*render);
                         if (leading_space) {
-                            len = sizeof(outvalue) - (size_t) snprintf(NULL, 0, "%s" LINE_SEP, render);
-                            SYSDEBUG("has leading space. buffer remaining=%zu", len);
-                            snprintf(outvalue + strlen(outvalue), len, "%s" LINE_SEP, render);
+                            snprintf(outvalue + buf_len, buf_size - buf_len, "%s" LINE_SEP, render);
                         } else {
-                            len = sizeof(outvalue) - (size_t) snprintf(NULL, 0, "    %s" LINE_SEP, render);
-                            SYSDEBUG("no leading space. buffer remaining=%zu", len);
-                            snprintf(outvalue + strlen(outvalue), len, "    %s" LINE_SEP, render);
+                            snprintf(outvalue + buf_len, buf_size - buf_len, "    %s" LINE_SEP, render);
                         }
                     } else {
-                        len = sizeof(outvalue) - (size_t) snprintf(NULL, 0, "%s", render);
-                        SYSDEBUG("string hint. buffer remaining=%zu", len);
-                        snprintf(outvalue + strlen(outvalue), len, "%s", render);
+                        snprintf(outvalue + buf_len, buf_size - buf_len, "%s", render);
                     }
                     if (mode == INI_WRITE_PRESERVE) {
-                        SYSDEBUG("%s", "freeing rendered value");
                         guard_free(render);
                     }
                 }
                 guard_array_free(parts);
                 strip(outvalue);
 
-                SYSDEBUG("%s", "appending line separator to buffer");
-                snprintf(outvalue + strlen(outvalue), sizeof(outvalue) - strlen(outvalue), "%s", LINE_SEP);
-                SYSDEBUG("buffer final length: %zu", strlen(outvalue));
+                // update length of outvalue
+                buf_len = strlen(outvalue);
+
+                snprintf(outvalue + buf_len, buf_size - buf_len, "%s", LINE_SEP);
 
                 fprintf(*stream, "%s = %s%s", ini->section[x]->data[y]->key, *hint == INIVAL_TYPE_STR_ARRAY ? LINE_SEP : "", outvalue);
-                SYSDEBUG("%s", "freeing value");
                 guard_free(value);
             } else {
                 fprintf(*stream, "%s = %s", ini->section[x]->data[y]->key, ini->section[x]->data[y]->value);
