@@ -420,25 +420,27 @@ char *git_rev_parse(const char *path, char *args) {
 }
 
 void msg(unsigned type, char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
     FILE *stream = NULL;
     char header[255];
     char status[20];
 
     if (type & STASIS_MSG_NOP) {
         // quiet mode
+        va_end(args);
         return;
     }
 
     if (!globals.verbose && type & STASIS_MSG_RESTRICT) {
         // Verbose mode is not active
+        va_end(args);
         return;
     }
 
     memset(header, 0, sizeof(header));
     memset(status, 0, sizeof(status));
-
-    va_list args;
-    va_start(args, fmt);
 
     stream = stdout;
     fprintf(stream, "%s", STASIS_COLOR_RESET);
@@ -467,17 +469,20 @@ void msg(unsigned type, char *fmt, ...) {
 
     if (fprintf(stream, "%s", header) < 0) {
         SYSERROR("%s", "unable to write message header to stream");
+        va_end(args);
         return;
     }
 
     const int len = vfprintf(stream, fmt, args);
     if (len < 0) {
         SYSERROR("%s", "unable to write message to stream");
+        va_end(args);
         return;
     }
 
     if (fprintf(stream, "%s", STASIS_COLOR_RESET) < 0) {
         SYSERROR("%s", "unable to write message footer to stream");
+        va_end(args);
         return;
     }
     va_end(args);
