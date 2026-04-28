@@ -210,7 +210,7 @@ int pkg_index_provides(int mode, const char *index, const char *spec, const char
 #if defined(DEBUG)
     const int debug_log = 1;
 #else
-    const debug_log = 0;
+    const int debug_log = 0;
 #endif
 
     // Print errors only when shell() itself throws one
