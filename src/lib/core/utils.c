@@ -893,9 +893,15 @@ int env_manipulate_pathstr(const char *key, char *path, int mode) {
     char *system_path_new = NULL;
 
     if (mode & PM_APPEND) {
-        asprintf(&system_path_new, "%s%s%s", system_path_old, PATH_SEP, path);
+        if (asprintf(&system_path_new, "%s%s%s", system_path_old, PATH_SEP, path) < 0 || !system_path_new) {
+            SYSERROR("%s", "Unable to allocate memory to update PATH");
+            return -1;
+        }
     } else if (mode & PM_PREPEND) {
-        asprintf(&system_path_new, "%s%s%s", path, PATH_SEP, system_path_old);
+        if (asprintf(&system_path_new, "%s%s%s", path, PATH_SEP, system_path_old) < 0 || !system_path_new) {
+            SYSERROR("%s", "Unable to allocate memory to update PATH");
+            return -1;
+        }
     }
 
     if (!system_path_new) {
