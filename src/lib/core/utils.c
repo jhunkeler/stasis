@@ -1009,9 +1009,7 @@ int grow(const size_t size_new, size_t *size_orig, char **data) {
             perror("realloc failed");
             return -1;
         }
-        if (tmp != *data) {
-            *data = tmp;
-        }
+        *data = tmp;
         *size_orig = new_size;
     }
     return 0;
