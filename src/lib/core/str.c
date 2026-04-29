@@ -77,7 +77,6 @@ char** split(char *_sptr, const char* delim, size_t max)
     // Duplicate the input string and save a copy of the pointer to be freed later
     char *orig = _sptr;
     char *sptr = strdup(orig);
-
     if (!sptr) {
         return NULL;
     }
@@ -118,6 +117,8 @@ char** split(char *_sptr, const char* delim, size_t max)
         }
         result[i] = calloc(STASIS_BUFSIZ, sizeof(char));
         if (!result[i]) {
+            guard_free(sptr);
+            guard_array_n_free(result, i);
             return NULL;
         }
         strncpy(result[i], token, STASIS_BUFSIZ - 1);
@@ -129,6 +130,8 @@ char** split(char *_sptr, const char* delim, size_t max)
         // append the remaining string contents to array
         result[i] = calloc(STASIS_BUFSIZ, sizeof(char));
         if (!result[i]) {
+            guard_free(sptr);
+            guard_array_n_free(result, i);
             return NULL;
         }
         strncpy(result[i], &orig[pos], STASIS_BUFSIZ - 1);
@@ -210,7 +213,7 @@ char *join_ex(char *separator, ...) {
     result = calloc(size + 1, sizeof(char));
     for (size_t i = 0; i < argc; i++) {
         // Append argument to string
-        strncat(result, argv[i], size - strlen(result)); // no -1 because +1 above
+        strncat(result, argv[i], size - (result ? strlen(result) - 1 : 0)); // no -1 because +1 above
 
         // Do not append a trailing separator when we reach the last argument
         if (i < (argc - 1)) {
