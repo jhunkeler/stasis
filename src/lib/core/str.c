@@ -200,6 +200,7 @@ char *join_ex(char *separator, ...) {
     argv = calloc(argc + 1, sizeof(char **));
     if (argv == NULL) {
         perror("join_ex calloc failed");
+        va_end(ap);
         return NULL;
     }
 
