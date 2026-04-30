@@ -324,6 +324,7 @@ int main(const int argc, char *argv[]) {
         mkdirs(ctx.storage.wheel_artifact_dir, 0755);
     }
 
+    msg(STASIS_MSG_L1, "Configure Micromamba\n");
     struct MicromambaInfo m;
     if (micromamba_configure(&ctx, &m)) {
         SYSERROR("%s", "Unable to configure micromamba");
