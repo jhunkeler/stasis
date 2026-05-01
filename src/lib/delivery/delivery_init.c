@@ -138,8 +138,9 @@ void delivery_init_dirs_stage1(struct Delivery *ctx) {
     path_store(&ctx->storage.tmpdir, PATH_MAX, ctx->storage.root, "tmp");
     if (delivery_init_tmpdir(ctx)) {
         msg(STASIS_MSG_ERROR | STASIS_MSG_L1, "Set $TMPDIR to a location other than %s\n", globals.tmpdir);
-        if (globals.tmpdir)
+        if (globals.tmpdir) {
             guard_free(globals.tmpdir);
+        }
         exit(1);
     }
 
