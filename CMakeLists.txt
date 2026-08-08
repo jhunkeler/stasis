@@ -62,9 +62,11 @@ message(CHECK_START "Compiler flags: ${nix_cflags}")
 
 set(core_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/core/include)
 set(delivery_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/delivery/include)
+set(extern_parson_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/extern/parson/include)
 set(SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}")
 configure_file(${PROJECT_SOURCE_DIR}/include/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/config.h @ONLY)
 include_directories(${PROJECT_BINARY_DIR}/include)
+add_subdirectory(extern)
 add_subdirectory(src)
 
 # Toggle regression testing on/off
