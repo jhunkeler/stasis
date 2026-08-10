@@ -18,7 +18,9 @@ int pushd(const char *path) {
 
     dirstack[dirstack_len] = realpath(".", NULL);
     dirstack_len++;
-    return chdir(path);
+    const int r = chdir(path);
+    SYSDEBUG("entering directory '%s'", path);
+    return r;
 }
 
 int popd() {
@@ -26,8 +28,10 @@ int popd() {
     if (dirstack_len - 1 < 0) {
         return result;
     }
+    SYSDEBUG("returning from directory '%s'", dirstack[dirstack_len]);
     dirstack_len--;
     result = chdir(dirstack[dirstack_len]);
+    SYSDEBUG("current directory is now '%s'", dirstack[dirstack_len]);
     guard_free(dirstack[dirstack_len]);
     return result;
 }
