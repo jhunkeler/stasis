@@ -48,16 +48,13 @@ void tpl_register_func(char *key, tplfunc *tplfunc_ptr, int argc, void *data_in)
 }
 
 int tpl_key_exists(char *key) {
-    SYSDEBUG("Key '%s' exists?", key);
     for (size_t i = 0; i < tpl_pool_used; i++) {
         if (tpl_pool[i]->key) {
             if (!strcmp(tpl_pool[i]->key, key)) {
-                SYSDEBUG("YES");
                 return true;
             }
         }
     }
-    SYSDEBUG("NO");
     return false;
 }
 
@@ -65,7 +62,6 @@ void tpl_register(char *key, char **ptr) {
     struct tpl_item *item = NULL;
     int replacing = 0;
 
-    SYSDEBUG("Registering string:\n\tkey=%s\n\tptr=%s", key, *ptr ? *ptr : "NOT SET");
     if (tpl_key_exists(key)) {
         for (size_t i = 0; i < tpl_pool_used; i++) {
             if (tpl_pool[i]->key) {
@@ -76,9 +72,7 @@ void tpl_register(char *key, char **ptr) {
             }
         }
         replacing = 1;
-        SYSDEBUG("Item will be replaced");
     } else {
-        SYSDEBUG("Creating new item");
         item = calloc(1, sizeof(*item));
         if (!item) {
             SYSERROR("unable to allocate memory for new item");
@@ -109,26 +103,21 @@ void tpl_free() {
         struct tpl_item *item = tpl_pool[i];
         if (item) {
             if (item->key) {
-                SYSDEBUG("freeing template item key: %s", item->key);
                 guard_free(item->key);
             }
-            SYSDEBUG("freeing template item: %p", item);
             item->ptr = NULL;
         }
         guard_free(item);
     }
     for (unsigned i = 0; i < tpl_pool_func_used; i++) {
         struct tplfunc_frame *item = tpl_pool_func[i];
-        SYSDEBUG("freeing template function key: %s", item->key);
         guard_free(item->key);
-        SYSDEBUG("freeing template item: %p", item);
         guard_free(item);
     }
 }
 
 char *tpl_getval(char *key) {
     char *result = NULL;
-    SYSDEBUG("Getting value of template string: %s", key);
     for (size_t i = 0; i < tpl_pool_used; i++) {
         if (tpl_pool[i]->key) {
             if (!strcmp(tpl_pool[i]->key, key)) {
@@ -141,7 +130,6 @@ char *tpl_getval(char *key) {
 }
 
 struct tplfunc_frame *tpl_getfunc(char *key) {
-    SYSDEBUG("Getting function frame: %s", key);
     struct tplfunc_frame *result = NULL;
     for (size_t i = 0; i < tpl_pool_func_used; i++) {
         if (tpl_pool_func[i]->key) {
@@ -186,7 +174,6 @@ char *tpl_render(char *str) {
             }
 
             // Read key name
-            SYSDEBUG("Reading key");
             size_t key_len = 0;
             while (isalnum(pos[off]) || pos[off] != '}') {
                 if (isspace(pos[off]) || isblank(pos[off])) {
@@ -198,7 +185,6 @@ char *tpl_render(char *str) {
                 key_len++;
                 off++;
             }
-            SYSDEBUG("Key is %s", key);
 
             char *type_stop = NULL;
             type_stop = strchr(key, ':');
@@ -207,10 +193,8 @@ char *tpl_render(char *str) {
             int do_func = 0;
             if (type_stop) {
                 if (!strncmp(key, "env", type_stop - key)) {
-                    SYSDEBUG("Will render as value of environment variable");
                     do_env = 1;
                 } else if (!strncmp(key, "func", type_stop - key)) {
-                    SYSDEBUG("Will render as output from function");
                     do_func = 1;
                 }
             }
@@ -278,14 +262,12 @@ char *tpl_render(char *str) {
                         SYSERROR("%s returned non-zero status: %d", frame->key, func_status);
                     }
                     value = strdup(func_result ? func_result : "");
-                    SYSDEBUG("Returned from function: %s (status: %d)\nData OUT\n--------\n'%s'", k, func_status, value);
                     guard_free(func_result);
                 }
                 guard_array_free(params);
             } else {
                 // Read replacement value
                 value = strdup(tpl_getval(key) ? tpl_getval(key) : "");
-                SYSDEBUG("Rendered:\nData\n----\n'%s'", value);
             }
         }
 
