@@ -66,6 +66,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     // The task starts inside the requested working directory
     if (chdir(task->working_dir)) {
         perror(task->working_dir);
+        semaphore_post(&pool->semaphore);
         exit(1);
     }
 
@@ -78,7 +79,6 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
         snprintf(task->log_file + strlen(task->log_file), sizeof(task->log_file) - strlen(task->log_file),
             "task-%zu-%d.log", mp_global_task_count, task->parent_pid);
         SYSDEBUG("using log file: %s", task->log_file);
-        semaphore_post(&pool->semaphore);
     }
     fp_log = freopen(task->log_file, "w+", stdout);
     if (!fp_log) {
