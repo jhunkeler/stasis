@@ -64,6 +64,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
 
     semaphore_wait(&pool->semaphore);
     // The task starts inside the requested working directory
+    SYSDEBUG("entering work directory: %s", task->working_dir);
     if (chdir(task->working_dir)) {
         perror(task->working_dir);
         semaphore_post(&pool->semaphore);
@@ -102,6 +103,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
         }
         close(fd);
     }
+    SYSDEBUG("closed unneeded file descriptors", sysconf(_SC_OPEN_MAX));
 
     // Generate timestamp for log header
     const time_t t = time(NULL);
