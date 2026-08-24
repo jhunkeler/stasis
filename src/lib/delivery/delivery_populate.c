@@ -16,8 +16,6 @@ static void conv_str(char **x, union INIVal val) {
     }
 }
 
-
-
 int populate_info(struct Delivery *ctx) {
     if (!ctx->info.time_str_epoch) {
         // Record timestamp used for release
