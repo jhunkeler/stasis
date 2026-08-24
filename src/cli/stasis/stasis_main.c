@@ -8,6 +8,7 @@
 // local includes
 #include "args.h"
 #include "conda.h"
+#include "ini_validate.h"
 #include "system_requirements.h"
 #include "tpl.h"
 
@@ -82,6 +83,11 @@ static void configure_delivery_ini(struct Delivery *ctx, char **delivery_input) 
         exit(1);
     }
     ctx->_stasis_ini_fp.delivery_path = strdup(*delivery_input);
+
+    if (ini_validate_schema_delivery("../validation.json", ctx->_stasis_ini_fp.delivery)) {
+        SYSERROR("Failed to validate delivery configuration");
+        exit(1);
+    }
 }
 
 static void configure_delivery_context(struct Delivery *ctx) {
