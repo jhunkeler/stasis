@@ -123,7 +123,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     // Execute task
     fflush(stdout);
     fflush(stderr);
-    char *args[] = {"bash", "--norc", task->parent_script, (char *) NULL};
+    char *args[] = {"bash", "--noprofile", "--norc", task->parent_script, (char *) NULL};
     semaphore_post(&pool->semaphore);
     execvp("bash", args);
     SYSERROR("execvp failed (%s)", strerror(errno));
