@@ -431,7 +431,6 @@ int populate_delivery_ini(struct Delivery *ctx, int render_mode);
 
 int populate_mission_ini(struct Delivery **ctx, int render_mode);
 
-void validate_delivery_ini(struct INIFILE *ini);
 
 int filter_repo_tags(char *repo, struct StrList *patterns);
 
