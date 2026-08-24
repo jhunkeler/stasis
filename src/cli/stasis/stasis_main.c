@@ -684,6 +684,11 @@ int main(const int argc, char *argv[]) {
     tpl_setup_vars(&ctx);
     tpl_setup_funcs(&ctx);
 
+    if (delivery_init_platform(&ctx)) {
+        SYSDEBUG("delivery_init_platform failed");
+        delivery_free(&ctx);
+        exit(1);
+    }
     configure_delivery_ini(&ctx, &delivery_input);
     configure_delivery_context(&ctx);
     check_requirements(&ctx);

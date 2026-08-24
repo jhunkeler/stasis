@@ -289,12 +289,6 @@ int delivery_init(struct Delivery *ctx, int render_mode) {
         globals.jfrog.repo = strdup(jfrepo);
     }
 
-    // Configure architecture and platform information
-    if (delivery_init_platform(ctx)) {
-        // memory error
-        return -1;
-    }
-
     // Create STASIS directory structure
     delivery_init_dirs_stage1(ctx);
 
