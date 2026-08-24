@@ -89,7 +89,9 @@ int get_junitxml_file_entrypoint(struct tplfunc_frame *frame, void *data_out) {
         SYSERROR("failed to allocate output string: %s", strerror(errno));
         return -1;
     }
-    snprintf(*output, PATH_MAX, "%s/results-%s-%s.xml", ctx->storage.results_dir, name, ctx->info.release_name);
+    snprintf(*output, PATH_MAX, "%s/results-%s-%s.xml",
+        ctx->storage.results_dir ? ctx->storage.results_dir : "",
+        name, ctx->info.release_name ? ctx->info.release_name : "");
 
     return result;
 }
@@ -114,7 +116,10 @@ int get_basetemp_dir_entrypoint(struct tplfunc_frame *frame, void *data_out) {
         SYSERROR("failed to allocate output string: %s", strerror(errno));
         return -1;
     }
-    snprintf(*output, PATH_MAX, "%s/truth-%s-%s", ctx->storage.tmpdir, name, ctx->info.release_name);
+    snprintf(*output, PATH_MAX, "%s/truth-%s-%s",
+        ctx->storage.tmpdir ? ctx->storage.tmpdir : "",
+        name,
+        ctx->info.release_name ? ctx->info.release_name : "");
 
     return result;
 }
