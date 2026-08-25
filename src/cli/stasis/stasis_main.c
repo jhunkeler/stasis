@@ -84,10 +84,18 @@ static void configure_delivery_ini(struct Delivery *ctx, char **delivery_input) 
     }
     ctx->_stasis_ini_fp.delivery_path = strdup(*delivery_input);
 
-    if (ini_validate_schema_delivery("../validation.json", ctx->_stasis_ini_fp.delivery)) {
-        SYSERROR("Failed to validate delivery configuration");
+    char *schema_filename = NULL;
+    if (asprintf(&schema_filename, "%s/%s", globals.sysconfdir, STASIS_VALIDATION_SCHEMA_DELIVERY) < 0) {
+        SYSERROR("Unable to allocate memory for path to schema file: %s", STASIS_VALIDATION_SCHEMA_DELIVERY);
         exit(1);
     }
+
+    if (ini_validate_schema_delivery(schema_filename, ctx->_stasis_ini_fp.delivery, &ctx->tpl_pool)) {
+        SYSERROR("Failed to validate delivery configuration");
+        guard_free(schema_filename);
+        exit(1);
+    }
+    guard_free(schema_filename);
 }
 
 static void configure_delivery_context(struct Delivery *ctx) {
