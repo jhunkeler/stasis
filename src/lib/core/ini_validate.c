@@ -177,31 +177,6 @@ struct StrList *get_section_names(const struct INIFILE *ini) {
     return list;
 }
 
-int strlist_contains_regex(struct StrList *list, const char *pattern) {
-    int result = false;
-    regex_t re;
-    const int rc = regcomp(&re, pattern, REG_EXTENDED);
-    if (rc != 0) {
-        char errbuf[1024] = {0};
-        regerror(rc, &re, errbuf, sizeof(errbuf));
-        SYSERROR("regex compilation failed: %s", errbuf);
-        goto fail;
-    }
-
-    for (size_t i = 0; i < strlist_count(list); i++) {
-        const char *item = strlist_item(list, i);
-        const int match = regexec(&re, item, 0, NULL, 0);
-        if (match == 0) {
-            result = true;
-            break;
-        }
-    }
-
-    fail:
-    regfree(&re);
-    return result;
-}
-
 static int status_text_update(char *text, const size_t maxlen, const char *color, const char *s) {
     const size_t remaining = maxlen - strlen(text);
     return snprintf(text + strlen(text), remaining, " %s%s%s ", color, s, STASIS_COLOR_RESET);
