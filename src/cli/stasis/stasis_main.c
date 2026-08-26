@@ -90,6 +90,7 @@ static void configure_delivery_ini(struct Delivery *ctx, char **delivery_input) 
         exit(1);
     }
 
+    msg(STASIS_MSG_L2, "Validating STASIS delivery configuration: %s\n", *delivery_input);
     if (ini_validate_schema_delivery(schema_filename, ctx->_stasis_ini_fp.delivery, &ctx->tpl_pool)) {
         SYSERROR("Failed to validate delivery configuration");
         guard_free(schema_filename);
@@ -655,6 +656,10 @@ int main(const int argc, char *argv[]) {
             case OPT_FORCE_REPEATABLE:
                 globals.force_repeatable = true;
                 break;
+            case OPT_VALIDATE:
+                LOG_LEVEL = LOG_LEVEL_INFO;
+                globals.validate = true;
+                break;
             case '?':
             default:
                 exit(1);
@@ -704,6 +709,11 @@ int main(const int argc, char *argv[]) {
         exit(1);
     }
     configure_delivery_ini(&ctx, &delivery_input);
+    if (globals.validate) {
+        printf("OK");
+        delivery_free(&ctx);
+        exit(0);
+    }
     configure_delivery_context(&ctx);
     check_requirements(&ctx);
 
