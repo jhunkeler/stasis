@@ -111,7 +111,7 @@ int ini_verify_str_regex(const void *data, const char *pattern) {
     char errbuf[1024] = {0};
     regerror(rc, &regex, errbuf, sizeof(errbuf));
 
-    if (rc == REG_NOERROR) {
+    if (rc == 0) {
         // Fall through
     } else if (rc == REG_NOMATCH) {
         SYSERROR("%s: regex: '%s', data: '%s'", errbuf, pattern, (const char *) data);
