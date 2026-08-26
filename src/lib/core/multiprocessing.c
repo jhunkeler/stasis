@@ -142,9 +142,7 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
     task->pid = pid;
     task->parent_pid = pid;
 
-    semaphore_wait(&pool->semaphore);
     mp_global_task_count++;
-    semaphore_post(&pool->semaphore);
 
     // Check child's status
     pid_t code = waitpid(pid, child_status, WUNTRACED | WCONTINUED | WNOHANG);
