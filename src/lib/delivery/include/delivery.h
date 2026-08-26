@@ -5,6 +5,7 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include "utils.h"
 #include "artifactory.h"
 #include "docker.h"
 #include "environment.h"

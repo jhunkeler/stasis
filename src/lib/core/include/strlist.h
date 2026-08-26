@@ -10,7 +10,6 @@ typedef int (ReaderFn)(size_t line, char **);
 #include <stdlib.h>
 #include <regex.h>
 #include "core.h"
-#include "utils.h"
 #include "str.h"
 
 

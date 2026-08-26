@@ -1,6 +1,7 @@
 #include "template_func_proto.h"
 #include "delivery.h"
 #include "github.h"
+#include "utils.h"
 
 int get_github_release_notes_tplfunc_entrypoint(struct tplfunc_frame *frame, void *data_out) {
     char **output = (char **) data_out;

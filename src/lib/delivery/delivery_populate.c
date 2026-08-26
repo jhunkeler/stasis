@@ -1,4 +1,5 @@
 #include "delivery.h"
+#include "utils.h"
 
 static void conv_str(char **x, union INIVal val) {
     if (*x) {

@@ -2,6 +2,7 @@
 #define STASIS_INI_VALIDATE_H
 
 #include "ini.h"
+#include "template.h"
 #define STASIS_VALIDATION_SCHEMA_DELIVERY "schema/delivery.json"
 
 typedef int (ini_verify_callback)(const char *, const char *, const void *);

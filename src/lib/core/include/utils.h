@@ -13,7 +13,7 @@
 #include "copy.h"
 #include "system.h"
 #include "strlist.h"
-#include "utils.h"
+#include "template.h"
 #include "ini.h"
 
 #if defined(STASIS_OS_WINDOWS)

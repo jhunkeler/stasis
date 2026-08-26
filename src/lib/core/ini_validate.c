@@ -1,3 +1,4 @@
+#include <string.h>
 #include "ini.h"
 #include "regex.h"
 #include "parson.h"

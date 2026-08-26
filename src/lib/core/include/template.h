@@ -2,7 +2,10 @@
 #ifndef STASIS_TEMPLATE_H
 #define STASIS_TEMPLATE_H
 
-#include "core.h"
+#include <string.h>
+#include "core_message.h"
+#include "log.h"
+#include "str.h"
 
 /**
  * Map a text value to a pointer in memory

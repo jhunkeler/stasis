@@ -8,7 +8,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-
+#include <errno.h>
+#include "utils.h"
 
 struct tpl_item {
     char *key;

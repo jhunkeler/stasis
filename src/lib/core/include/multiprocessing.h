@@ -2,15 +2,16 @@
 #ifndef STASIS_MULTIPROCESSING_H
 #define STASIS_MULTIPROCESSING_H
 
-#include "core.h"
-#include "sem.h"
-#include "timespec.h"
 #include <signal.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <math.h>
+#include "core.h"
+#include "sem.h"
+#include "timespec.h"
+#include "utils.h"
 
 struct MultiProcessingTimer {
     struct timespec t_start;
