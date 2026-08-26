@@ -81,12 +81,14 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
             "task-%zu-%d.log", mp_global_task_count, task->parent_pid);
         SYSDEBUG("using log file: %s", task->log_file);
     }
+    SYSDEBUG("open log file as stdout");
     fp_log = freopen(task->log_file, "w+", stdout);
     if (!fp_log) {
         SYSERROR("unable to open '%s' for writing: %s", task->log_file, strerror(errno));
         semaphore_post(&pool->semaphore);
         return -1;
     }
+    SYSDEBUG("opened log file as stdout");
 
     const int redirect = dup2(STDOUT_FILENO, STDERR_FILENO);
     if (redirect < 0) {
@@ -113,6 +115,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
         timebuf[strlen(timebuf) ? strlen(timebuf) - 1 : 0] = 0;
     }
 
+    SYSDEBUG("writing header");
     // Generate log header
     fprintf(fp_log, "# STARTED: %s\n", timebuf ? timebuf : "unknown");
     fprintf(fp_log, "# PID: %d\n", task->parent_pid);
@@ -121,6 +124,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     fprintf(fp_log, "# OUTPUT:\n");
     // Commit header to log file / clean up
     fflush(fp_log);
+    SYSDEBUG("wrote header");
 
     // Execute task
     fflush(stdout);
@@ -133,6 +137,10 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
 }
 
 int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, pid_t pid, int *child_status) {
+    for (int fd = 3; fd < sysconf(_SC_OPEN_MAX); fd++) {
+        close(fd);
+    }
+    SYSDEBUG("closed unneeded file descriptors", sysconf(_SC_OPEN_MAX));
     // Record the task start time
     update_task_start(task);
 
@@ -142,7 +150,9 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
     task->pid = pid;
     task->parent_pid = pid;
 
+    semaphore_wait(&pool->semaphore);
     mp_global_task_count++;
+    semaphore_post(&pool->semaphore);
 
     // Check child's status
     pid_t code = waitpid(pid, child_status, WUNTRACED | WCONTINUED | WNOHANG);
@@ -155,7 +165,6 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
 
 static int mp_task_fork(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     SYSDEBUG("Preparing to fork() child task %s:%s", pool->ident, task->ident);
-    semaphore_wait(&pool->semaphore);
     pid_t pid = fork();
     int parent_status = 0;
     int child_status = 0;
@@ -502,7 +511,6 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
                         pool->ident, slot->ident, slot->parent_pid, duration);
                     update_task_interval_start(slot);
                 }
-
                 update_task_interval_elapsed(slot);
                 semaphore_post(&pool->semaphore);
             }
