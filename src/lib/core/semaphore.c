@@ -55,18 +55,26 @@ int semaphore_init(struct Semaphore *s, const char *name, const int value) {
 int semaphore_wait(struct Semaphore *s) {
     int sgv_value = 0;
     int sgv_ret = sem_getvalue(s->sem, &sgv_value);
+#if defined(STASIS_SEMAPHORE_DEBUG)
     SYSDEBUG("sem_getvalue() returned %d, value %d", sgv_ret, sgv_value);
+#endif
     const int status = sem_wait(s->sem);
-    //SYSDEBUG("returning %d", status);
+#if defined(STASIS_SEMAPHORE_DEBUG)
+    SYSDEBUG("returning %d", status);
+#endif
     return status;
 }
 
 int semaphore_post(struct Semaphore *s) {
     int sgv_value = 0;
     int sgv_ret = sem_getvalue(s->sem, &sgv_value);
+#if defined(STASIS_SEMAPHORE_DEBUG)
     SYSDEBUG("sem_getvalue() returned %d, value %d", sgv_ret, sgv_value);
+#endif
     const int status = sem_post(s->sem);
+#if defined(STASIS_SEMAPHORE_DEBUG)
     SYSDEBUG("returning %d", status);
+#endif
     return status;
 }
 
