@@ -129,11 +129,12 @@ int tox_run_entrypoint(struct tplfunc_frame *frame, void *data_out) {
     char **output = (char **) data_out;
     struct tplfunc_frame *f = (struct tplfunc_frame *) frame;
     const struct Delivery *ctx = (const struct Delivery *) f->data_in;
+    struct tpl_pool **tpl = (struct tpl_pool **) ctx->tpl_pool;
 
     // Apply workaround for tox positional arguments
     char *toxconf = NULL;
     if (!access("tox.ini", F_OK)) {
-        if (!fix_tox_conf("tox.ini", &toxconf, PATH_MAX)) {
+        if (!fix_tox_conf("tox.ini", &toxconf, PATH_MAX, tpl)) {
             msg(STASIS_MSG_L3, "Fixing tox positional arguments\n");
             *output = calloc(STASIS_BUFSIZ, sizeof(**output));
             if (!*output) {

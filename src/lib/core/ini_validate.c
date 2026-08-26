@@ -183,11 +183,11 @@ static int status_text_update(char *text, const size_t maxlen, const char *color
     return snprintf(text + strlen(text), remaining, " %s%s%s ", color, s, STASIS_COLOR_RESET);
 }
 
-static int status_text_reset(char *text) {
+static void status_text_reset(char *text) {
     text[0] = '\0';
 }
 
-int ini_validate_schema_delivery(const char *filename, struct INIFILE *ini) {
+int ini_validate_schema_delivery(const char *filename, struct INIFILE *ini, struct tpl_pool **tpl_pool) {
     int errors = 0;
     ini_verify_regex_callback *check_re[] = {
         ini_verify_str_regex,
@@ -196,7 +196,7 @@ int ini_validate_schema_delivery(const char *filename, struct INIFILE *ini) {
 
     JSON_Value *handle = json_parse_file(filename);
     if (!handle) {
-        SYSERROR("unable to parse JSON file");
+        SYSERROR("unable to parse JSON file: %s", filename);
         return -1;
     }
 
@@ -320,7 +320,7 @@ int ini_validate_schema_delivery(const char *filename, struct INIFILE *ini) {
                     bool do_all_section_keys = false;
                     union INIVal value;
                     if (key_name) {
-                        if (ini_getval(ini, (char *) cur_section->key, (char *) key_name, type_hint, INI_READ_RENDER, &value)) {
+                        if (ini_getval(ini, (char *) cur_section->key, (char *) key_name, type_hint, INI_READ_RENDER, &value, tpl_pool)) {
                             status_text_update(status_text, sizeof(status_text), STASIS_COLOR_BLUE, "undefined");
                             SYSINFO("%s.%s [%s]", cur_section->key, key_name, status_text);
                             status_text_reset(status_text);

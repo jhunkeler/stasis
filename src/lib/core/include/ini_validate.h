@@ -8,7 +8,7 @@
 typedef int (ini_verify_callback)(const char *, const char *, const void *);
 typedef int (ini_verify_regex_callback)(const void *, const char *);
 
-int ini_validate_schema_delivery(const char *, struct INIFILE *);
+int ini_validate_schema_delivery(const char *, struct INIFILE *, struct tpl_pool **);
 
 int ini_validate_required_key_exists(struct INIFILE *ini, const char *section_name, char *key);
 

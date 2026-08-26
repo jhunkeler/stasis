@@ -700,14 +700,15 @@ int main(const int argc, char *argv[]) {
 
     msg(STASIS_MSG_L1, "Setup\n");
 
-    tpl_setup_vars(&ctx);
-    tpl_setup_funcs(&ctx);
-
+    delivery_init_tpl_pool(&ctx);
     if (delivery_init_platform(&ctx)) {
         SYSDEBUG("delivery_init_platform failed");
         delivery_free(&ctx);
         exit(1);
     }
+    tpl_setup_vars(&ctx);
+    tpl_setup_funcs(&ctx);
+
     configure_delivery_ini(&ctx, &delivery_input);
     if (globals.validate) {
         printf("OK");
@@ -754,7 +755,7 @@ int main(const int argc, char *argv[]) {
     msg(STASIS_MSG_L1, "Cleaning up\n");
     delivery_free(&ctx);
     globals_free();
-    tpl_free();
+    tpl_free_func_pool();
 
     msg(STASIS_MSG_L1, "Done!\n");
     return 0;

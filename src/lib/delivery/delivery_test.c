@@ -189,7 +189,7 @@ void delivery_tests_run(struct Delivery *ctx) {
                 memset(&proc, 0, sizeof(proc));
 
                 safe_strncpy(cmd, test->script, strlen(test->script) + STASIS_BUFSIZ);
-                char *cmd_rendered = tpl_render(cmd);
+                char *cmd_rendered = tpl_render(&ctx->tpl_pool, cmd);
                 if (cmd_rendered) {
                     if (strcmp(cmd_rendered, cmd) != 0) {
                         safe_strncpy(cmd, cmd_rendered, strlen(test->script) + STASIS_BUFSIZ);
@@ -232,7 +232,7 @@ void delivery_tests_run(struct Delivery *ctx) {
                     popd();
                     if (!globals.continue_on_error) {
                         guard_free(runner_cmd);
-                        tpl_free();
+                        tpl_free(&ctx->tpl_pool);
                         delivery_free(ctx);
                         globals_free();
                     }
@@ -274,7 +274,7 @@ void delivery_tests_run(struct Delivery *ctx) {
 
                     safe_strncpy(cmd, test->script_setup, cmd_len);
 
-                    char *cmd_rendered = tpl_render(cmd);
+                    char *cmd_rendered = tpl_render(&ctx->tpl_pool, cmd);
                     if (cmd_rendered) {
                         if (strcmp(cmd_rendered, cmd) != 0) {
                             safe_strncpy(cmd, cmd_rendered, cmd_len);
@@ -301,7 +301,7 @@ void delivery_tests_run(struct Delivery *ctx) {
                         popd();
                         if (!globals.continue_on_error) {
                             guard_free(runner_cmd);
-                            tpl_free();
+                            tpl_free(&ctx->tpl_pool);
                             delivery_free(ctx);
                             globals_free();
                         }
