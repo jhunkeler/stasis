@@ -54,9 +54,12 @@ struct Semaphore {
  * @return -1 on error
  * @return 0 on success
  */
-int semaphore_init(struct Semaphore *s, const char *name, int value);
+int semaphore_init(struct Semaphore **s, const char *name, int value);
 int semaphore_wait(struct Semaphore *s);
 int semaphore_post(struct Semaphore *s);
-void semaphore_destroy(struct Semaphore *s);
+void semaphore_destroy(struct Semaphore **s);
+
+void semaphore_pool_init();
+void semaphore_pool_free();
 
 #endif //STASIS_SEMAPHORE_H

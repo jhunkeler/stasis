@@ -43,7 +43,7 @@ struct MultiProcessingPool {
     char ident[255]; ///< Identity of task pool
     char log_root[PATH_MAX]; ///< Base directory to store stderr/stdout log files
     int status_interval; ///< Report a pooled task is "running" every n seconds
-    struct Semaphore semaphore;
+    struct Semaphore *semaphore;
 };
 
 /// A multiprocessing task's initial state (i.e. "FAIL")
