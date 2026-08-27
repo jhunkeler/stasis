@@ -502,7 +502,7 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
                 // When a task has executed for longer than status_intervals, print a status update
                 // interval_elapsed represents the time between intervals, not the total runtime of the task
                 semaphore_wait(&pool->semaphore);
-                if (fabs(slot->interval_data.duration) > pool->status_interval) {
+                if (fabs(slot->interval_data.duration) >= pool->status_interval) {
                     slot->interval_data.duration = 0.0;
                 }
                 if (slot->interval_data.duration == 0.0) {
