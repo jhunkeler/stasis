@@ -27,6 +27,7 @@ static void update_task_interval_start(struct MultiProcessingTask *task) {
         SYSERROR("realtime clock unavailable");
         exit(1);
     }
+    task->interval_data.duration = 0.0;
 }
 
 static void update_task_interval_elapsed(struct MultiProcessingTask *task) {
@@ -138,6 +139,8 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
 int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, pid_t pid, int *child_status) {
     // Record the task start time
     update_task_start(task);
+    update_task_interval_start(task);
+    task->interval_data.t_stop = task->interval_data.t_start;
 
     printf("[%s:%s] Task started (pid: %d)\n", pool->ident, task->ident, pid);
 
@@ -493,22 +496,20 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
                 // When a task has executed for longer than status_intervals, print a status update
                 // interval_elapsed represents the time between intervals, not the total runtime of the task
                 semaphore_wait(pool->semaphore);
-                if (fabs(slot->interval_data.duration) >= pool->status_interval) {
-                    slot->interval_data.duration = 0.0;
-                }
-                update_task_interval_elapsed(slot);
-                if (slot->interval_data.duration == 0.0) {
+                if (slot->interval_data.duration >= pool->status_interval) {
                     seconds_to_human_readable(slot->time_data.duration, duration, sizeof(duration));
                     printf("[%s:%s] Task is running (pid: %d, elapsed: %s)\n",
                         pool->ident, slot->ident, slot->parent_pid, duration);
                     update_task_interval_start(slot);
+                    slot->interval_data.duration = 0.0;
                 }
                 semaphore_post(pool->semaphore);
             }
 
-            if (!task_ended || !task_ended_by_signal) {
+            if (!task_ended && !task_ended_by_signal) {
                 semaphore_wait(pool->semaphore);
                 update_task_elapsed(slot);
+                update_task_interval_elapsed(slot);
                 semaphore_post(pool->semaphore);
             }
         }
