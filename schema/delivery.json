@@ -184,13 +184,13 @@
           "name": "script_setup",
           "required": false,
           "expect_type": "INIVAL_TYPE_STR_ARRAY",
-          "regex": "\\s+(.+)$"
+          "regex": "(.+)$"
         },
         {
           "name": "script",
           "required": false,
           "expect_type": "INIVAL_TYPE_STR_ARRAY",
-          "regex": "\\s+(.+)$"
+          "regex": "(.+)$"
         }
       ]
     },
@@ -241,6 +241,12 @@
         {
           "name": "tags",
           "required": true,
+          "expect_type": "INIVAL_TYPE_STR_ARRAY",
+          "regex": "(.+)$"
+        },
+        {
+          "name": "test_script",
+          "required": false,
           "expect_type": "INIVAL_TYPE_STR_ARRAY",
           "regex": "(.+)$"
         }
