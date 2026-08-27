@@ -165,7 +165,6 @@ static int mp_task_fork(struct MultiProcessingPool *pool, struct MultiProcessing
         return -1;
     }
     if (pid == 0) {
-        //semaphore_post(&pool->semaphore);
         child(pool, task);
     } else {
         parent_status = parent(pool, task, pid, &child_status);
