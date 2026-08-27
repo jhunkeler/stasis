@@ -62,7 +62,15 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     (void) pool;
     FILE *fp_log = NULL;
 
+    // Close child file descriptors
+    for (int fd = 3; fd < sysconf(_SC_OPEN_MAX); fd++) {
+        close(fd);
+    }
+
+    SYSDEBUG("is waiting");
     semaphore_wait(pool->semaphore);
+    SYSDEBUG("is running");
+
     // The task starts inside the requested working directory
     SYSDEBUG("entering work directory: %s", task->working_dir);
     if (chdir(task->working_dir)) {
@@ -98,17 +106,6 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
         return -1;
     }
 
-    /*
-    // Close child file descriptors
-    for (int fd = 3; fd < sysconf(_SC_OPEN_MAX); fd++) {
-        if (fd == redirect) {
-            continue;
-        }
-        close(fd);
-    }
-    SYSDEBUG("closed unneeded file descriptors", sysconf(_SC_OPEN_MAX));
-    */
-
     // Generate timestamp for log header
     const time_t t = time(NULL);
     char *timebuf = ctime(&t);
@@ -139,13 +136,6 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
 }
 
 int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, pid_t pid, int *child_status) {
-    /*
-    for (int fd = 3; fd < sysconf(_SC_OPEN_MAX); fd++) {
-        close(fd);
-    }
-    SYSDEBUG("closed unneeded file descriptors", sysconf(_SC_OPEN_MAX));
-    */
-
     // Record the task start time
     update_task_start(task);
 
@@ -154,11 +144,10 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
     // Give the child process access to our PID value
     task->pid = pid;
     task->parent_pid = pid;
-
     mp_global_task_count++;
 
     // Check child's status
-    pid_t code = waitpid(pid, child_status, WUNTRACED | WCONTINUED | WNOHANG);
+    const pid_t code = waitpid(pid, child_status, WUNTRACED | WCONTINUED | WNOHANG);
     if (code < 0) {
         SYSERROR("waitpid failed");
         return -1;
