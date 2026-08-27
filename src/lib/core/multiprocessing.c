@@ -497,13 +497,13 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
                 if (fabs(slot->interval_data.duration) >= pool->status_interval) {
                     slot->interval_data.duration = 0.0;
                 }
+                update_task_interval_elapsed(slot);
                 if (slot->interval_data.duration == 0.0) {
                     seconds_to_human_readable(slot->time_data.duration, duration, sizeof(duration));
                     printf("[%s:%s] Task is running (pid: %d, elapsed: %s)\n",
                         pool->ident, slot->ident, slot->parent_pid, duration);
                     update_task_interval_start(slot);
                 }
-                update_task_interval_elapsed(slot);
                 semaphore_post(pool->semaphore);
             }
 
