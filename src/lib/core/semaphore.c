@@ -8,48 +8,7 @@
 #include "sem.h"
 #include "utils.h"
 
-#define STASIS_SEMAPHORE_POOL_SIZE 100
-struct Semaphore **semaphores = NULL;
-int semaphores_alloc_map[STASIS_SEMAPHORE_POOL_SIZE] = {0};
-bool semaphore_handle_exit_ready = false;
-
-void semaphore_handle_exit() {
-    semaphore_pool_free();
-}
-
-void semaphore_pool_init() {
-    if (!semaphores) {
-        semaphores = calloc(STASIS_SEMAPHORE_POOL_SIZE, sizeof(*semaphores));
-        memset(semaphores_alloc_map, 0, STASIS_SEMAPHORE_POOL_SIZE);
-        if (semaphores == NULL) {
-            SYSERROR("unable to allocate semaphore pool array");
-            exit(1);
-        }
-    }
-}
-
-void semaphore_pool_free() {
-    if (!semaphores) {
-        return;
-    }
-    for (size_t i = 0; i < STASIS_SEMAPHORE_POOL_SIZE; i++) {
-        if (semaphores_alloc_map[i]) {
-            semaphore_destroy(&semaphores[i]);
-        }
-    }
-    guard_free(semaphores);
-}
-
-static void register_semaphore(struct Semaphore **s) {
-    semaphore_pool_init();
-    for (size_t i = 0; i < STASIS_SEMAPHORE_POOL_SIZE; i++) {
-        if (!semaphores[i]) {
-            semaphores[i] = *s;
-            semaphores_alloc_map[i] = 1;
-            break;
-        }
-    }
-}
+int semaphore_created_by_this_process = 0;
 
 int semaphore_init(struct Semaphore **s, const char *name, const int value) {
     if (*s == NULL) {
@@ -63,16 +22,20 @@ int semaphore_init(struct Semaphore **s, const char *name, const int value) {
     const size_t max_namelen = STASIS_NAME_MAX;
 #endif
     snprintf((*s)->name, max_namelen, "/%s", name);
-    (*s)->sem = sem_open((*s)->name, O_CREAT, 0644, value);
+    (*s)->sem = sem_open((*s)->name, O_CREAT | O_EXCL, 0644, value);
     if ((*s)->sem == SEM_FAILED) {
-        return -1;
+        if (errno == EEXIST) {
+            (*s)->sem = sem_open((*s)->name, 0);
+            if ((*s)->sem == SEM_FAILED) {
+                SYSERROR("sem_open() failed: %s", strerror(errno));
+                exit(1);
+            }
+        } else {
+            SYSERROR("sem_open() failed: %s", strerror(errno));
+            exit(1);
+        }
     }
     SYSDEBUG("%s", (*s)->name);
-    register_semaphore(s);
-    if (!semaphore_handle_exit_ready) {
-        atexit(semaphore_handle_exit);
-        semaphore_handle_exit_ready = true;
-    }
 
     return 0;
 }
@@ -105,19 +68,13 @@ int semaphore_post(struct Semaphore *s) {
 
 void semaphore_destroy(struct Semaphore **s) {
     if (*s) {
-        for (size_t i = 0; i < STASIS_SEMAPHORE_POOL_SIZE; i++) {
-            if (semaphores[i] == *s) {
-                semaphores_alloc_map[i] = 0;
-                break;
-            }
-        }
         SYSDEBUG("closing");
         if (sem_close((*s)->sem)) {
             SYSERROR("sem_close() failed: %s", strerror(errno));
         }
         (*s)->sem = NULL;
 
-        if ((*s)->name[0] != '\0') {
+        if ((*s)->name[0] != '\0' && semaphore_created_by_this_process) {
             SYSDEBUG("unlinking %s", (*s)->name);
             if (sem_unlink((*s)->name)) {
                 SYSERROR("sem_unlink() failed: %s", strerror(errno));
