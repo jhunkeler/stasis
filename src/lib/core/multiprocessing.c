@@ -113,7 +113,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     SYSDEBUG("writing header");
     // Generate log header
     fprintf(fp_log, "# STARTED: %s\n", timebuf ? timebuf : "unknown");
-    fprintf(fp_log, "# PID: %d\n", task->parent_pid);
+    fprintf(fp_log, "# PID: %d\n", task->pid);
     fprintf(fp_log, "# WORKDIR: %s\n", task->working_dir);
     fprintf(fp_log, "# COMMAND:\n%s\n", task->cmd);
     fprintf(fp_log, "# OUTPUT:\n");
@@ -499,7 +499,7 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
                 if (slot->interval_data.duration >= pool->status_interval) {
                     seconds_to_human_readable(slot->time_data.duration, duration, sizeof(duration));
                     printf("[%s:%s] Task is running (pid: %d, elapsed: %s)\n",
-                        pool->ident, slot->ident, slot->parent_pid, duration);
+                        pool->ident, slot->ident, slot->pid, duration);
                     update_task_interval_start(slot);
                     slot->interval_data.duration = 0.0;
                 }
