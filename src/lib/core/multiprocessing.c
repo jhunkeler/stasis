@@ -146,7 +146,7 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
 
     // Give the child process access to our PID value
     task->pid = pid;
-    task->parent_pid = pid;
+    task->parent_pid = getpid();
     mp_global_task_count++;
 
     // Check child's status
