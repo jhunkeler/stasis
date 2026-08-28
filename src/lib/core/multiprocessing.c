@@ -78,7 +78,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     // The task starts inside the requested working directory
     SYSDEBUG("entering work directory: %s", task->working_dir);
     if (chdir(task->working_dir)) {
-        perror(task->working_dir);
+        SYSERROR("%s: %s", strerror(errno), task->working_dir);
         semaphore_post(pool->semaphore);
         exit(1);
     }
