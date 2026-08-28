@@ -22,7 +22,7 @@ int semaphore_init(struct Semaphore **s, const char *name, const int value) {
     const size_t max_namelen = STASIS_NAME_MAX;
 #endif
     snprintf((*s)->name, max_namelen, "/%s", name);
-    (*s)->sem = sem_open((*s)->name, O_CREAT | O_EXCL, 0644, value);
+    (*s)->sem = sem_open((*s)->name, O_CREAT | O_EXCL, 0600, value);
     if ((*s)->sem == SEM_FAILED) {
         if (errno == EEXIST) {
             (*s)->sem = sem_open((*s)->name, 0);
