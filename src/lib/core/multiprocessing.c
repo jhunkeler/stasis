@@ -202,10 +202,22 @@ struct MultiProcessingTask *mp_pool_task(struct MultiProcessingPool *pool, const
     }
 
     // Set working directory
+    char *working_dir_tmp = NULL;
+    int working_dir_tmp_need_free = 0;
     if (isempty(working_dir)) {
-        snprintf(slot->working_dir, sizeof(slot->working_dir), ".");
+        working_dir_tmp_need_free = 1;
+        working_dir_tmp = getcwd(NULL, sizeof(slot->working_dir));
     } else {
-        snprintf(slot->working_dir, sizeof(slot->working_dir), "%s", working_dir);
+        working_dir_tmp = realpath(working_dir, NULL);
+    }
+    if (!working_dir_tmp) {
+        SYSERROR("unable to allocate memory for working directory path: %s", working_dir ? working_dir : ".");
+        return NULL;
+    }
+
+    snprintf(slot->working_dir, sizeof(slot->working_dir), "%s", working_dir_tmp);
+    if (working_dir_tmp_need_free) {
+        guard_free(working_dir_tmp);
     }
 
     // Create a temporary file to act as our intermediate command script
