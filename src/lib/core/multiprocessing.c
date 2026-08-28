@@ -27,7 +27,7 @@ static void update_task_interval_start(struct MultiProcessingTask *task) {
         SYSERROR("realtime clock unavailable");
         exit(1);
     }
-    task->interval_data.duration = 0.0;
+    task->interval_data.t_stop = task->interval_data.t_start;
 }
 
 static void update_task_interval_elapsed(struct MultiProcessingTask *task) {
@@ -45,6 +45,7 @@ static void update_task_start(struct MultiProcessingTask *task) {
         SYSERROR("realtime clock unavailable");
         exit(1);
     }
+    task->time_data.t_stop = task->time_data.t_start;
 }
 static void update_task_elapsed(struct MultiProcessingTask *task) {
     // Record the task stop time
