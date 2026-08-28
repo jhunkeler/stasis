@@ -64,7 +64,9 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     (void) pool;
     FILE *fp_log = NULL;
 
+    SYSDEBUG("waiting for lock");
     semaphore_wait(pool->semaphore);
+    SYSDEBUG("aquired lock");
 
     // Close child file descriptors
     for (int fd = 3; fd < sysconf(_SC_OPEN_MAX); fd++) {
