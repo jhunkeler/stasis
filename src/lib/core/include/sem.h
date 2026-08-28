@@ -9,11 +9,15 @@
 #if defined(STASIS_OS_DARWIN)
 // Darwin's sem_open() limits the path length to PSEMNAMLEN
 // even though it isn't used directly.
-#include <sys/posix_sem.h>  // PSEMNAMLEN
+#include <dispatch/dispatch.h>
 #endif
 
 struct Semaphore {
-    sem_t *sem;
+#if defined(STASIS_OS_DARWIN)
+    dispatch_semaphore_t sem;
+#else
+    sem_t sem;
+#endif
     char name[STASIS_NAME_MAX];
 };
 

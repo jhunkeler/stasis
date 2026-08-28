@@ -3,6 +3,7 @@
 */
 #include <stdio.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 
 #include "core_message.h"
 #include "sem.h"
@@ -12,31 +13,24 @@ int semaphore_created_by_this_process = 0;
 
 int semaphore_init(struct Semaphore **s, const char *name, const int value) {
     if (*s == NULL) {
-        *s = calloc(1, sizeof(**s));
-    }
-#if defined(STASIS_OS_DARWIN)
-    // see: sem_open(2)
-    const size_t max_namelen = PSEMNAMLEN;
-#else
-    // see: sem_open(3)
-    const size_t max_namelen = STASIS_NAME_MAX;
-#endif
-    snprintf((*s)->name, max_namelen, "/%s", name);
-    (*s)->sem = sem_open((*s)->name, O_CREAT | O_EXCL, 0600, value);
-    if ((*s)->sem == SEM_FAILED) {
-        if (errno == EEXIST) {
-            SYSWARN( "named semaphore already exists: %s", (*s)->name);
-            (*s)->sem = sem_open((*s)->name, 0);
-            if ((*s)->sem == SEM_FAILED) {
-                SYSERROR("sem_open() failed: %s", strerror(errno));
-                exit(1);
-            }
-        } else {
-            SYSERROR("sem_open() failed: %s", strerror(errno));
+        *s = mmap(NULL, sizeof(struct Semaphore), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+        if (*s == MAP_FAILED) {
+            SYSERROR("mmap() failed");
             exit(1);
         }
     }
-    SYSDEBUG("%s", (*s)->name);
+#if defined(STASIS_OS_DARWIN)
+    (*s)->sem = dispatch_semaphore_create(value);
+    // see: dispatch_semaphore_create
+#else
+    if (sem_init(&(*s)->sem, 1, value)) {
+        SYSERROR("sem_init() failed: %s", strerror(errno));
+        exit(1);
+    }
+    // see: sem_init(3)
+#endif
+    snprintf((*s)->name, STASIS_NAME_MAX, "%s", name);
+    SYSDEBUG("%s initialized", (*s)->name);
 
     return 0;
 }
@@ -47,7 +41,11 @@ int semaphore_wait(struct Semaphore *s) {
     int sgv_ret = sem_getvalue(s->sem, &sgv_value);
     SYSDEBUG("sem_getvalue() returned %d, value %d", sgv_ret, sgv_value);
 #endif
-    const int status = sem_wait(s->sem);
+#if defined(STASIS_OS_DARWIN)
+    const int status = dispatch_semaphore_wait(s->sem, DISPATCH_TIME_FOREVER);
+#else
+    const int status = sem_wait(&s->sem);
+#endif
 #if defined(STASIS_SEMAPHORE_DEBUG)
     SYSDEBUG("returning %d", status);
 #endif
@@ -60,7 +58,11 @@ int semaphore_post(struct Semaphore *s) {
     int sgv_ret = sem_getvalue(s->sem, &sgv_value);
     SYSDEBUG("sem_getvalue() returned %d, value %d", sgv_ret, sgv_value);
 #endif
-    const int status = sem_post(s->sem);
+#if defined(STASIS_OS_DARWIN)
+    const int status = dispatch_semaphore_signal(s->sem);
+#else
+    const int status = sem_post(&s->sem);
+#endif
 #if defined(STASIS_SEMAPHORE_DEBUG)
     SYSDEBUG("returning %d", status);
 #endif
@@ -68,21 +70,12 @@ int semaphore_post(struct Semaphore *s) {
 }
 
 void semaphore_destroy(struct Semaphore **s) {
+#if defined(STASIS_OS_DARWIN)
+    dispatch_release((*s)->sem);
+#endif
     if (*s) {
-        SYSDEBUG("closing");
-        if (sem_close((*s)->sem)) {
-            SYSERROR("sem_close() failed: %s", strerror(errno));
-        }
-        (*s)->sem = NULL;
-
-        if ((*s)->name[0] != '\0' && semaphore_created_by_this_process) {
-            SYSDEBUG("unlinking %s", (*s)->name);
-            if (sem_unlink((*s)->name)) {
-                SYSERROR("sem_unlink() failed: %s", strerror(errno));
-            }
-        }
+        memset(&(*s)->sem, 0, sizeof((*s)->sem));
         (*s)->name[0] = '\0';
-
-        guard_free(*s);
+        munmap(*s, sizeof(**s));
     }
 }
