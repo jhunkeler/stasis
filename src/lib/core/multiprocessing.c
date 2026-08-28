@@ -85,12 +85,6 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     fflush(stdout);
     fflush(stderr);
 
-    // Set log file name
-    if (globals.enable_task_logging) {
-        snprintf(task->log_file + strlen(task->log_file), sizeof(task->log_file) - strlen(task->log_file),
-            "task-%zu-%d.log", mp_global_task_count, task->parent_pid);
-        SYSDEBUG("using log file: %s", task->log_file);
-    }
     SYSDEBUG("open log file as stdout");
     fp_log = freopen(task->log_file, "w+", stdout);
     if (!fp_log) {
@@ -148,6 +142,13 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
     // Give the child process access to our PID value
     task->pid = pid;
     task->parent_pid = getpid();
+
+    // Set log file name
+    if (globals.enable_task_logging) {
+        snprintf(task->log_file + strlen(task->log_file), sizeof(task->log_file) - strlen(task->log_file) + 1,
+            "task-%s-%s-%zu.log", pool->ident, task->ident, mp_global_task_count);
+        SYSDEBUG("using log file: %s", task->log_file);
+    }
     mp_global_task_count++;
 
     return 0;
