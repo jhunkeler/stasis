@@ -132,7 +132,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
     _exit(127);
 }
 
-int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, pid_t pid, int *child_status) {
+int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, pid_t pid) {
     // Record the task start time
     update_task_start(task);
     update_task_interval_start(task);
@@ -154,7 +154,6 @@ static int mp_task_fork(struct MultiProcessingPool *pool, struct MultiProcessing
     SYSDEBUG("Preparing to fork() child task %s:%s", pool->ident, task->ident);
     pid_t pid = fork();
     int parent_status = 0;
-    int child_status = 0;
     if (pid == -1) {
         SYSERROR("fork failed");
         return -1;
@@ -162,7 +161,7 @@ static int mp_task_fork(struct MultiProcessingPool *pool, struct MultiProcessing
     if (pid == 0) {
         child(pool, task);
     } else {
-        parent_status = parent(pool, task, pid, &child_status);
+        parent_status = parent(pool, task, pid);
         fflush(stdout);
         fflush(stderr);
     }
