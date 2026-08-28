@@ -144,12 +144,7 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
     task->pid = pid;
     task->parent_pid = getpid();
 
-    // Set log file name
-    if (globals.enable_task_logging) {
-        snprintf(task->log_file + strlen(task->log_file), sizeof(task->log_file) - strlen(task->log_file) + 1,
-            "task-%s-%s-%zu.log", pool->ident, task->ident, mp_global_task_count);
-        SYSDEBUG("using log file: %s", task->log_file);
-    }
+
     mp_global_task_count++;
 
     return 0;
@@ -195,12 +190,17 @@ struct MultiProcessingTask *mp_pool_task(struct MultiProcessingPool *pool, const
     // Set log file path
     memset(slot->log_file, 0, sizeof(*slot->log_file));
     if (globals.enable_task_logging) {
+        // root
         snprintf(slot->log_file, sizeof(slot->log_file), "%s", pool->log_root);
-        // FORTIFY_SOURCE won't leave snprintf alone. The chance for truncation is slim anyway.
         safe_strncat(slot->log_file, "/", sizeof(slot->log_file));
+
+        // path
+        snprintf(slot->log_file + strlen(slot->log_file), sizeof(slot->log_file) - strlen(slot->log_file),
+            "task-%s-%s-%zu.log", pool->ident, slot->ident, mp_global_task_count);
     } else {
         snprintf(slot->log_file, sizeof(slot->log_file), "/dev/stdout");
     }
+    SYSDEBUG("using log file: %s", slot->log_file);
 
     // Set working directory
     char *working_dir_tmp = NULL;
