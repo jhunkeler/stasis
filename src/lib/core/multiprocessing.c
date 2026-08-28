@@ -377,8 +377,11 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
             if (slot->status == MP_POOL_TASK_STATUS_INITIAL) {
                 slot->_startup = time(NULL);
                 if (mp_task_fork(pool, slot)) {
-                    SYSERROR("%s: mp_task_fork failed", slot->ident);
-                    kill(0, SIGTERM);
+                    SYSERROR("%s: mp_task_fork failed, killing pool %s", slot->ident, pool->ident);
+                    if (mp_pool_kill(pool, SIGKILL)) {
+                        SYSERROR("%s: mp_pool_kill failed", pool->ident);
+                    }
+                    return -1;
                 }
             }
 
