@@ -22,6 +22,7 @@ struct MultiProcessingTimer {
 struct MultiProcessingTask {
     pid_t pid; ///< Program PID
     pid_t parent_pid; ///< Program PID (parent process)
+    int done; ///< Task is complete
     int status; ///< Child process exit status
     int signaled_by; ///< Last signal received, if any
     int timeout; ///< Seconds to elapse before killing the process

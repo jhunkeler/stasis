@@ -272,7 +272,7 @@ void mp_pool_show_summary(struct MultiProcessingPool *pool) {
         struct MultiProcessingTask *task = &pool->task[i];
         char status_str[10] = {0};
 
-        if (task->status == MP_POOL_TASK_STATUS_INITIAL && task->pid == MP_POOL_PID_UNUSED) {
+        if (task->status == MP_POOL_TASK_STATUS_INITIAL && !task->done) {
             // You will only see this label if the task pool is killed by
             // MP_POOL_FAIL_FAST and tasks are still queued for execution
             snprintf(status_str, sizeof(status_str), "HOLD");
@@ -333,7 +333,7 @@ int mp_pool_kill(struct MultiProcessingPool *pool, int signum) {
                     semaphore_post(pool->semaphore);
                     // We are short-circuiting the normal flow, and the process is now dead, so mark it as such
                     SYSDEBUG("Marking slot %zu: UNUSED", i);
-                    slot->pid = MP_POOL_PID_UNUSED;
+                    slot->done = 1;
                 }
             }
         }
@@ -382,7 +382,7 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
             }
 
             // Has the child been processed already?
-            if (slot->pid == MP_POOL_PID_UNUSED) {
+            if (slot->done) {
                 // Child is already used up, skip it
                 hang_check++;
                 if (hang_check >= pool->num_used) {
@@ -487,7 +487,7 @@ int mp_pool_join(struct MultiProcessingPool *pool, size_t jobs, size_t flags) {
                 }
 
                 // Update progress and tell the poller to ignore the PID. The process is gone.
-                slot->pid = MP_POOL_PID_UNUSED;
+                slot->done = 1;
             } else if (pid < 0) {
                 SYSERROR("waitpid failed: %s", strerror(errno));
                 return -1;
