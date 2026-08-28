@@ -25,6 +25,7 @@ int semaphore_init(struct Semaphore **s, const char *name, const int value) {
     (*s)->sem = sem_open((*s)->name, O_CREAT | O_EXCL, 0600, value);
     if ((*s)->sem == SEM_FAILED) {
         if (errno == EEXIST) {
+            SYSWARN( "named semaphore already exists: %s", (*s)->name);
             (*s)->sem = sem_open((*s)->name, 0);
             if ((*s)->sem == SEM_FAILED) {
                 SYSERROR("sem_open() failed: %s", strerror(errno));
