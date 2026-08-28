@@ -150,12 +150,6 @@ int parent(struct MultiProcessingPool *pool, struct MultiProcessingTask *task, p
     task->parent_pid = getpid();
     mp_global_task_count++;
 
-    // Check child's status
-    const pid_t code = waitpid(pid, child_status, WUNTRACED | WCONTINUED | WNOHANG);
-    if (code < 0) {
-        SYSERROR("waitpid failed");
-        return -1;
-    }
     return 0;
 }
 
