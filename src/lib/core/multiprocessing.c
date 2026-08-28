@@ -103,6 +103,7 @@ int child(struct MultiProcessingPool *pool, struct MultiProcessingTask *task) {
         semaphore_post(pool->semaphore);
         return -1;
     }
+    SYSDEBUG("redirected stderr to stdout");
 
     // Generate timestamp for log header
     const time_t t = time(NULL);
